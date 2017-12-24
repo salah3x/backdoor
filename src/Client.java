@@ -36,11 +36,10 @@ public class Client {
 		//Symmetric encryption is used
 		String encryptionKey = "sixteen byte key";
 
-		//Encryption algo
+		//Encryption algorithm
 		String algorithm = "AES";
 
 		//A helper class used to encrypt and decrypt Strings
-		//Uses the Blowfish algorithm
 		CryptoHelper cryptoHelper = new CryptoHelper(encryptionKey, algorithm);
 
 		//Starting the server

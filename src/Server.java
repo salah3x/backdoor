@@ -29,81 +29,81 @@ public class Server {
 		//Symmetric encryption is used
 		String encryptionKey = "sixteen byte key";
 
-		//Encryption algo
+		//Encryption algorithm
 		String algorithm = "AES";
 
 		//A helper class used to encrypt and decrypt Strings
-		//Uses the Blowfish algorithm
 		CryptoHelper cryptoHelper = new CryptoHelper(encryptionKey, algorithm);
 
-		//Starting the server
+		//A helper class used to handle threads (clients) connected to the server
+		//It does task scheduling following the Least Laxity First algorithm
+		//Scheduler scheduler = new Scheduler();
 
+		//Starting the server
 		final ServerSocket serverSocket = new ServerSocket(port);
 
 		//Check if the server is/still running
 		while (!serverSocket.isClosed()) {
 
 			//Accepting request
-			//todo : add multithreading support
 			Socket socket = serverSocket.accept();
 
-			//Used to read data from socket's input stream
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			//Used to write data to socket's output stream
-			PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
-
-			//Check if the client is/still connected
-			while (!socket.isClosed()) {
+			Thread thread = new Thread(() -> {
 				try {
-					//Reading command from client
-					String cmd = cryptoHelper.decrypt(bufferedReader.readLine());
 
-					if (cmd.equals("exit"))
-						break;
-					if (cmd.equals("exit-server")) {
-						System.exit(0);
-					}
+					//Used to read data from socket's input stream
+					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					//Used to write data to socket's output stream
+					PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
 
-					//Running the command
-					try {
-						//Getting the runtime env starting the command as a new process
-						Process p = Runtime.getRuntime().exec(cmd);
+					//Check if the client is/still connected
+					while (!socket.isClosed()) {
 
-						//Used to read from the process's output stream as it executes
-						//todo : add somthing to stop the process (in case of infinite stream)
-						BufferedReader buf = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						//Reading command from client
+						String cmd = cryptoHelper.decrypt(bufferedReader.readLine());
 
-						buf.lines().forEach(s -> {
-							try {
-								//Encrypting output and sending it to output stream
-								printWriter.println(cryptoHelper.encrypt(s));
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							//Flushing the stream so the client doesn't need to wait until the process is finished
-							printWriter.flush();
-						});
-					} catch (Exception e) {
-						e.printStackTrace();
-						//In case of errors, encrypt return them back to client
-						try {
-							printWriter.println(cryptoHelper.encrypt(e.getMessage()));
-						} catch (Exception e1) {
-							e1.printStackTrace();
+						if (cmd.equals("exit"))
+							break;
+						if (cmd.equals("exit-server")) {
+							System.exit(0);
 						}
+
+						//Running the command
+						try {
+							//Getting the runtime env starting the command as a new process
+							Process p = Runtime.getRuntime().exec(cmd);
+
+							//Used to read from the process's output stream as it executes
+							//todo : add somthing to stop the process (in case of infinite stream)
+							BufferedReader buf = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+							buf.lines().forEach(s -> {
+								try {
+									//Encrypting output and sending it to output stream
+									printWriter.println(cryptoHelper.encrypt(s));
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+								//Flushing the stream so the client doesn't need to wait until the process is finished
+								printWriter.flush();
+							});
+						} catch (Exception e) {
+							e.printStackTrace();
+							//In case of errors, encrypt return them back to client
+							printWriter.println(cryptoHelper.encrypt(e.getMessage()));
+							printWriter.flush();
+						}
+
+						//Sending end signal to Client to stop reading from stream
+						printWriter.println(cryptoHelper.encrypt(endSignal));
 						printWriter.flush();
 					}
 
-					//Sending end signal to Client to stop reading from stream
-					printWriter.println(cryptoHelper.encrypt(endSignal));
-					printWriter.flush();
 				} catch (Exception e) {
 					e.printStackTrace();
-					printWriter.close();
-					bufferedReader.close();
-					socket.close();
 				}
-			}
+			}, "client");//name of thread for example Client 1 or ip 75...
+			thread.start();
 		}
 	}
 
@@ -138,4 +138,12 @@ public class Server {
 			return new String(decrypted);
 		}
 	}
+
+	/*static class Scheduler implements ScheduledExecutorService{
+
+		@Override
+		public void submit(Runnable command) {
+			//
+		}
+	}*/
 }
