@@ -1,8 +1,19 @@
 # backdoor
 A backdoor implementation in java.
-Inspired from [this project](https://github.com/jeffreysasaki/backdoor/).
+Inspired from [this project](https://github.com/jeffreysasaki/backdoor/ "jeffreysasaki/backdoor").
 
-December 20, 2017
+By :
+
+> Hamza Kadar
+
+> Zakariae Azahaf
+
+> SalahEddine Loukili
+
+**Ensa Al-Hoceima**
+
+*December 20, 2017*
+
 ## Introduction
 A backdoor is perceived as a negative vulnerability because it allows an attacker to obtain access to a
 victim’s machine without proper credentials. However, a backdoor is more than just a tool of
@@ -17,7 +28,8 @@ commands on the victim’s machine and returns the response to the attacker.
 * Application must ensure that it only receives (authenticate) those packets that are meant for the
   backdoor itself.
 * The backdoor must interpret commands sent to it, execute them and send the results back.
-* Incorporate an encryption scheme of your choice into the backdoor.
+* Incorporate an encryption scheme into the backdoor.
+* Add support for multiple connections to server.
 
 ## Implementation
 The program is written in java. There are two programs included in this assignment:
@@ -62,7 +74,7 @@ The ampersand (&) will denote that the backdoor will be executed in the backgrou
 
 **Server.java**
 
-* Parse command-line argumentListen for connection
+* Parse command-line argument
 * While Server is up
   * Listen for connection
   * While client is connected to the server
