@@ -2,14 +2,6 @@
 A backdoor implementation in java.
 Inspired from [this project](https://github.com/jeffreysasaki/backdoor/ "jeffreysasaki/backdoor").
 
-By :
-
-> Hamza Kadar
-
-> Zakariae Azahaf
-
-> SalahEddine Loukili
-
 **Ensa Al-Hoceima**
 
 *December 20, 2017*
