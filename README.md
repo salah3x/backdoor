@@ -6,6 +6,16 @@ Inspired from [this project](https://github.com/jeffreysasaki/backdoor/ "jeffrey
 
 *December 20, 2017*
 
+# Table of Contents
+* [Introduction](#introduction)
+* [Requirements](#requirements)
+* [Implementation](#implementation)
+* [Usage](#usage)
+* [Pseudocode](#pseudocode)
+* [Testing](#testing)
+* [Conclusion](#conclusion)
+
+
 ## Introduction
 A backdoor is perceived as a negative vulnerability because it allows an attacker to obtain access to a
 victim’s machine without proper credentials. However, a backdoor is more than just a tool of
