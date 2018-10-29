@@ -49,7 +49,7 @@ data, again with AES, and transmit the data back to the client.
 
 ## Usage
 
-First compile the java code
+If you are building from source, first compile the java code. (java compiler needed)
 
 Prior to running the program, the user must have java runtime installed
 
